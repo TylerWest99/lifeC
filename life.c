@@ -1,7 +1,7 @@
 //***************************************************
 // Filename: life.c
 //
-// Author(s): 
+// Author(s): Tyler West
 //***************************************************
 
 #include "life.h"
@@ -46,7 +46,17 @@ char **loadGridFromFile(char *filename, int *rows, int *cols)
     *cols = atoi(strtok(NULL," "));
 
 	// COMPLETE THIS PART OF THIS FUNCTION
+	char *value;
 
+	for(int i = 0; i < *rows; i++){
+		for(int j = 0; j < *cols; j++){
+			value = strtok(NULL, " ");
+			if(value != NULL){
+				grid[i][j] = *value;
+			} 
+		}
+	}
+	//Maybe done
     return grid;
 }
 
@@ -56,7 +66,20 @@ void saveGridToFile(char *filename, int rows, int cols, char **grid)
     FILE *file = fopen(filename,"w");
 
 	// COMPLETE THIS PART OF THIS FUNCTION
+	
+	//put in rows and cols here 
 
+	char buf[1024];
+	sprintf(buf, "%d %d ", rows, cols);
+	fputs(buf, file);
+
+	for(int i = 0; i < rows; i++){
+		for(int j = 0; j < cols; j++){
+			fputc(grid[i][j], file);
+			fputc(' ', file);
+		}
+	}
+	//maybe done
     fclose(file);
 }
 
@@ -66,7 +89,12 @@ char **copyGrid(int rows, int cols, char **grid)
     char **dup = NULL;
 
 	// COMPLETE THIS PART OF THIS FUNCTION
-
+	dup = malloc(cols * rows * sizeof(char));
+	for(int i = 0; i < rows; i++){
+		for(int j = 0; j < cols; j++){
+			dup[i][j] = grid[i][j];
+		}
+	}
     return dup;
 }
 
@@ -75,8 +103,31 @@ char **mutateGrid(int rows, int cols, char **grid)
 {
 	char** newgrid = copyGrid(rows,cols,grid);
 
-	// COMPLETE THIS PART OF THIS FUNCTION
+	/*
+		A live cell with less than two live neighbors dies -> grid[i][j] == '1' and neighbors < 2 to '0'
+		A live cell with two or three live neighbors lives -> nothing
+		A live cell with more than three neighbors dies -> grid[i][j] == '1' and neighbors > 3 to '0'
+		A dead cell with three live neighbors becomes live -> grid[i][j] == '0' and neighbors == 3 to '1'
+	*/
 
+	// COMPLETE THIS PART OF THIS FUNCTION
+	int numNeighbors = 0;
+	for(int i = 0; i < rows; i++){
+		for(int j = 0; j < cols; j++){
+			//sets num of neighbors
+			numNeighbors = nbrOfNeighbors(i,j,rows,cols,grid);
+
+			if(grid[i][j] == '1' && numNeighbors < 2){
+				newgrid[i][j] = '0';
+			}
+			if(grid[i][j] == '1' && numNeighbors > 3){
+				newgrid[i][j] = '0';
+			} 
+			if(grid[i][j] == '0' && numNeighbors == 3){
+				newgrid[i][j] = '1';
+			}
+		}
+	}
 	return newgrid;
 }
 
@@ -86,6 +137,27 @@ int nbrOfNeighbors(int i, int j, int rows, int cols, char **grid)
 	int neighbors = 0;
 
 	// COMPLETE THIS PART OF THIS FUNCTION
+	for(int rowOff = -1; rowOff <= 1; rowOff++){
+		for(int colOff = -1; colOff <= 1; colOff++){
+			//does nothing for itself
+			if(rowOff == 0 && colOff == 0){
+				continue;
+			}
+			int currentRow = i + rowOff;
+			int currentCol = j + colOff;
 
+			if(currentRow < 0 || currentRow >= rows){
+				continue;
+			}
+			if(currentCol < 0 || currentCol >= cols){
+				continue;
+			}
+
+			if(grid[i][j] == '1'){
+				neighbors++;
+			}
+		}
+	}
 	return neighbors;
 }
+
